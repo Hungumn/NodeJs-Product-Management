@@ -1,42 +1,7 @@
-let productList = [
-    {
-        "id":1,
-        "fullName":"MacBook Air with M1 chip",
-        "amount":10,
-        "price":999,
-        "sale":10
-    },
-    {
-        "id":2,
-        "fullName":"MacBook Air with M2 chip",
-        "amount":3,
-        "price":1999,
-        "sale":1
-    },
-    {
-        "id":3,
-        "fullName":"iPhone 13 ProMax",
-        "amount":10,
-        "price":1350,
-        "sale":12
-    },
-    {
-        "id":4,
-        "fullName":"iPhone 12 Pro",
-        "amount":10,
-        "price":799,
-        "sale":20
-    },
-    {
-        "id":5,
-        "fullName":"iPad Pro 11-inch",
-        "amount":66,
-        "price":699,
-        "sale":10
-    },
-];
+const {Product} = require("../model/index")
 
-const getList = () =>{
+const getList = async () =>{
+    const productList = await Product.findAll();
     if (productList){
         return productList;
     }else{
@@ -44,43 +9,49 @@ const getList = () =>{
     }
 }
 
-const getDetail =(id) =>{
-    const index = productList.findIndex((product) => product.id == id)
-    if (index != -1){
-        const product = productList[index]
+const getDetail = async (id) =>{
+    const product = await Product.findOne({
+        where: {
+            id
+        }
+    });
+    if (product){
         return product;
-    }else{
+    }
+    else {
         return false;
     }
 }
 
-const create = (product) =>{
-    const newProduct = {
-        id: Math.floor(Math.random() * 100) + 5,
-        ...product
-    }
-    productList= [...productList,newProduct];
+const create = async (product) =>{
+    const newProduct = await Product.create(product)
     return newProduct;
 }
 
-const update = (id,fullName, amount, price, sale ) =>{
-    const index = productList.findIndex((product) => product.id == id);
-    if (index !== -1) {
-      const productOld = productList[index];
-      const productUpdate = { ...productOld, fullName, amount, price, sale };
-      productList[index] = productUpdate;
-      return productUpdate;
+const update = async (id,product ) =>{
+    const productUpdate = await getDetail(id);
+    if (productUpdate) {
+        productUpdate.fullName = product.fullName;
+        productUpdate.amount = product.amount;
+        productUpdate.price = product.price;
+        productUpdate.sale = product.sale;
+        const productUpdated = await productUpdate.save();
+      return productUpdated;
     } else {
       return false;
     }
 }
 
-const deleteById = (id) =>{
-    const index = productList.findIndex((product) => product.id == id)
-    if (index != -1){
-        product = productList[index];
-        productList.splice(index, 1);
-        return product;
+const deleteById = async (id) =>{
+    const productDelete = await getDetail(id);
+    if (productDelete){
+        await Product.destroy({ 
+            where :{
+                id,
+            }
+        });
+        
+        return productDelete;
     }else{
         return false;
     }
